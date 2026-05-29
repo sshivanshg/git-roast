@@ -8,6 +8,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { GlassInput } from "@/components/GlassInput";
 import { BackgroundAtmosphere } from "@/components/BackgroundAtmosphere";
 import { HallOfShame, type HallEntry } from "@/components/HallOfShame";
+import { Leaderboard } from "@/components/Leaderboard";
 import { Download, Share2, Copy, Check } from "lucide-react";
 import type { Roast } from "@/lib/roast";
 
@@ -255,7 +256,15 @@ export default function RoastApp() {
           )}
         </div>
 
-        {/* ── Hall of Shame ── */}
+        {/* ── Global leaderboard ── always visible except while loading */}
+        {state.status !== "loading" && (
+          <Leaderboard
+            onSelect={name => { setUsername(name); run(name); }}
+            currentUsername={state.status === "done" ? state.roast.username : undefined}
+          />
+        )}
+
+        {/* ── Hall of Shame (local recent history) ── */}
         {state.status !== "loading" && hallEntries.length > 0 && (
           <HallOfShame
             entries={hallEntries}

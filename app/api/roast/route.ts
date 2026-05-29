@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { computeRoast, RoastError } from "@/lib/roast";
+import { saveToLeaderboard } from "@/lib/leaderboard";
 
 export const runtime = "nodejs";
 
@@ -19,6 +20,8 @@ export async function GET(req: NextRequest) {
 
   try {
     const roast = await computeRoast(username);
+    // Fire-and-forget — don't block the response on KV write
+    saveToLeaderboard(roast).catch(() => {});
     return NextResponse.json(roast, {
       headers: { "Cache-Control": "public, s-maxage=600, stale-while-revalidate=86400" }
     });
