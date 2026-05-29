@@ -43,24 +43,6 @@ const nextConfig = {
           value: "public, max-age=86400, stale-while-revalidate=604800"
         }
       ]
-    },
-    {
-      source: "/:path*\\.(?:jpg|jpeg|gif|png|webp|avif|ico)",
-      headers: [
-        {
-          key: "Cache-Control",
-          value: "public, max-age=31536000, immutable"
-        }
-      ]
-    },
-    {
-      source: "/:path*\\.(?:js|css)",
-      headers: [
-        {
-          key: "Cache-Control",
-          value: "public, max-age=31536000, immutable"
-        }
-      ]
     }
   ],
   redirects: async () => [
