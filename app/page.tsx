@@ -82,5 +82,56 @@ export async function generateMetadata({
 }
 
 export default function Page() {
-  return <RoastApp />;
+  const schema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "FAQPage",
+        mainEntity: [
+          {
+            "@type": "Question",
+            name: "What is git wrapped?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "git wrapped is a fun web app that analyzes your GitHub commit history and gives you a hilarious roast based on your coding patterns, commit messages, and contributions."
+            }
+          },
+          {
+            "@type": "Question",
+            name: "Is my data safe?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Yes, git wrapped only uses publicly available GitHub data. We don't store any personal information and you don't need to log in."
+            }
+          },
+          {
+            "@type": "Question",
+            name: "How is the chaos score calculated?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "The chaos score is calculated based on various factors including commit frequency, message quality, timing patterns, and coding consistency across your recent commits."
+            }
+          },
+          {
+            "@type": "Question",
+            name: "Can I share my roast?",
+            acceptedAnswer: {
+              "@type": "Answer",
+              text: "Absolutely! You can share your result on X (Twitter), download it as an image, or copy the link to share with friends."
+            }
+          }
+        ]
+      }
+    ]
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+      />
+      <RoastApp />
+    </>
+  );
 }
