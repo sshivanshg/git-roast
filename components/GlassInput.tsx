@@ -22,10 +22,10 @@ export function GlassInput({
   const [isFocused, setIsFocused] = useState(false);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter" && !isLoading) {
-      onSubmit();
-    }
+    if (e.key === "Enter" && !isLoading) onSubmit();
   };
+
+  const showCursor = !value && !isFocused;
 
   return (
     <motion.div
@@ -34,121 +34,110 @@ export function GlassInput({
       transition={{ delay: 0.3, duration: 0.6 }}
       className="relative w-full max-w-2xl mx-auto"
     >
-      {/* Glow effect on focus */}
-      {isFocused && (
-        <motion.div
-          layoutId="input-glow"
-          className="absolute inset-0 rounded-2xl bg-accent-glow/5 blur-xl -z-10"
-          animate={{
-            boxShadow: [
-              "0 0 20px rgba(56, 189, 248, 0.2), 0 0 40px rgba(56, 189, 248, 0.1)",
-              "0 0 40px rgba(56, 189, 248, 0.3), 0 0 80px rgba(56, 189, 248, 0.15)",
-              "0 0 20px rgba(56, 189, 248, 0.2), 0 0 40px rgba(56, 189, 248, 0.1)"
-            ]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        />
-      )}
-
-      {/* Glass container */}
+      {/* Outer glow halo */}
       <div
-        className={`
-          relative group
-          rounded-2xl border
-          bg-white/5 backdrop-blur-xl
-          transition-all duration-300
-          ${
-            isFocused
-              ? "border-accent-glow/60 shadow-glow-lg"
-              : "border-neutral-700/30 shadow-glass-lg hover:border-neutral-600/50"
-          }
-        `}
-      >
-        {/* Inner shine */}
-        <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+        className="absolute -inset-px rounded-2xl blur-md transition-opacity duration-300"
+        style={{
+          opacity: isFocused ? 0.9 : 0.35,
+          background:
+            "linear-gradient(90deg, rgba(0,240,255,0.5), rgba(168,85,247,0.4), rgba(0,240,255,0.5))"
+        }}
+      />
 
-        {/* Content */}
-        <div className="relative flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4">
-          {/* Terminal $ symbol */}
-          <span className="text-neutral-600 font-mono text-base sm:text-lg select-none flex-shrink-0">
+      {/* Terminal command line */}
+      <div
+        className="relative rounded-2xl transition-all duration-300"
+        style={{
+          background: "rgba(8,8,12,0.92)",
+          border: `1px solid ${isFocused ? "rgba(0,240,255,0.8)" : "rgba(0,240,255,0.32)"}`,
+          boxShadow: isFocused
+            ? "0 0 0 1px rgba(0,240,255,0.4), 0 0 38px rgba(0,240,255,0.28), inset 0 1px 0 rgba(255,255,255,0.05)"
+            : "0 0 22px rgba(0,240,255,0.1), inset 0 1px 0 rgba(255,255,255,0.04)"
+        }}
+      >
+        {/* window chrome dots */}
+        <div className="flex items-center gap-1.5 px-4 pt-3">
+          <span className="h-2 w-2 rounded-full bg-red-500/60" />
+          <span className="h-2 w-2 rounded-full bg-yellow-400/60" />
+          <span className="h-2 w-2 rounded-full bg-emerald-500/50" />
+          <span className="ml-2 font-mono text-[9px] uppercase tracking-[0.2em] text-neutral-600">
+            roast.sh — zsh
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-5 pb-4 pt-2.5">
+          {/* prompt */}
+          <span className="select-none font-mono text-base sm:text-lg font-bold text-accent-glow">
             $
           </span>
 
-          {/* Input field */}
-          <input
-            type="text"
-            value={value}
-            onChange={(e) => onChange(e.target.value)}
-            onFocus={() => setIsFocused(true)}
-            onBlur={() => setIsFocused(false)}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder}
-            spellCheck={false}
-            autoCapitalize="off"
-            autoCorrect="off"
-            autoComplete="off"
-            disabled={isLoading}
-            className={`
-              flex-1 min-w-0 bg-transparent
-              font-mono text-base sm:text-lg outline-none
-              placeholder:text-neutral-600
-              text-white
-              disabled:opacity-50 disabled:cursor-not-allowed
-            `}
-          />
+          {/* input + fake cursor when empty/unfocused */}
+          <div className="relative flex-1 min-w-0">
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => onChange(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={handleKeyDown}
+              placeholder={showCursor ? "" : placeholder}
+              spellCheck={false}
+              autoCapitalize="off"
+              autoCorrect="off"
+              autoComplete="off"
+              disabled={isLoading}
+              className="w-full bg-transparent font-mono text-base sm:text-lg text-white outline-none placeholder:text-neutral-600 disabled:opacity-50"
+            />
+            {showCursor && (
+              <span className="pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 flex items-center font-mono text-base sm:text-lg text-neutral-600">
+                {placeholder}
+                <span className="ml-0.5 inline-block h-[1.1em] w-[2px] bg-accent-glow align-middle animate-blink shadow-[0_0_8px_rgba(0,240,255,0.9)]" />
+              </span>
+            )}
+          </div>
 
-          {/* Submit button */}
+          {/* roast button */}
           <motion.button
             onClick={onSubmit}
             disabled={isLoading}
             whileHover={{ scale: isLoading ? 1 : 1.05 }}
             whileTap={{ scale: isLoading ? 1 : 0.95 }}
-            className={`
-              relative flex-shrink-0
-              px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg
-              font-semibold font-mono text-sm
-              transition-all duration-200
-              flex items-center gap-1.5
-              ${
-                isLoading
-                  ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
-                  : "bg-accent-glow text-black hover:shadow-glow"
-              }
-            `}
+            className="relative flex-shrink-0 flex items-center gap-1.5 rounded-lg px-3.5 sm:px-5 py-2 font-mono text-sm font-bold uppercase tracking-wide transition-shadow duration-200"
+            style={
+              isLoading
+                ? { background: "#1a1a1f", color: "#666" }
+                : {
+                    background: "#00F0FF",
+                    color: "#000",
+                    boxShadow: "0 0 22px rgba(0,240,255,0.5)"
+                  }
+            }
           >
             {isLoading ? (
-              <motion.span
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 1.5, repeat: Infinity }}
-                className="flex items-center gap-1 whitespace-nowrap"
-              >
-                <span className="inline-block w-1 h-1 bg-neutral-600 rounded-full animate-blink" />
-                <span className="hidden sm:inline">compiling...</span>
-                <span className="sm:hidden">...</span>
-              </motion.span>
+              <span className="flex items-center gap-1.5 whitespace-nowrap">
+                <span className="inline-block h-1 w-1 animate-blink rounded-full bg-neutral-500" />
+                <span className="hidden sm:inline">compiling…</span>
+                <span className="sm:hidden">…</span>
+              </span>
             ) : (
               <>
                 roast
-                <motion.div
-                  animate={{ x: [0, 3, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
-                >
-                  <ArrowRight size={14} />
-                </motion.div>
+                <ArrowRight size={15} strokeWidth={2.6} />
               </>
             )}
           </motion.button>
         </div>
       </div>
 
-      {/* Hint text */}
+      {/* Hint */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5, duration: 0.6 }}
-        className="mt-4 text-center text-xs text-neutral-600"
+        className="mt-3.5 text-center font-mono text-[11px] text-neutral-600"
       >
-        try: torvalds, sindresorhus, or your own username
+        try <span className="text-neutral-400">torvalds</span> ·{" "}
+        <span className="text-neutral-400">sindresorhus</span> · or your own
       </motion.p>
     </motion.div>
   );

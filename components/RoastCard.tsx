@@ -4,7 +4,7 @@ import { forwardRef } from "react";
 import { motion } from "framer-motion";
 import type { Roast } from "@/lib/roast";
 
-const BLUE = "56, 189, 248";
+const CYAN = "0, 240, 255";
 
 export const RoastCard = forwardRef<HTMLDivElement, { roast: Roast }>(
   function RoastCard({ roast }, ref) {
@@ -12,93 +12,106 @@ export const RoastCard = forwardRef<HTMLDivElement, { roast: Roast }>(
     return (
       <div
         ref={ref}
-        className="relative w-full max-w-xl overflow-hidden rounded-2xl"
+        className="relative w-full max-w-xl overflow-hidden rounded-3xl"
         style={{
-          background: "rgba(255,255,255,0.03)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background:
+            "linear-gradient(160deg, rgba(20,20,28,0.92) 0%, rgba(8,8,12,0.95) 100%)",
+          border: "1px solid rgba(255,255,255,0.1)",
           boxShadow: `
-            inset 0 1px 0 rgba(255,255,255,0.07),
-            0 0 0 1px rgba(${BLUE},0.08),
-            0 20px 60px rgba(0,0,0,0.6),
-            0 0 80px rgba(${BLUE},0.05)
+            inset 0 1px 0 rgba(255,255,255,0.1),
+            0 0 0 1px rgba(${tc},0.18),
+            0 30px 80px rgba(0,0,0,0.75),
+            0 0 90px rgba(${tc},0.12)
           `
         }}
       >
-        {/* ── Terminal window chrome ── */}
+        {/* Tier accent bar — the "rarity stripe" */}
         <div
-          className="flex items-center justify-between px-4 sm:px-5 py-2.5 sm:py-3"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+          className="h-1 w-full"
+          style={{
+            background: `linear-gradient(90deg, transparent, rgb(${tc}), transparent)`,
+            boxShadow: `0 0 16px rgba(${tc},0.7)`
+          }}
+        />
+
+        {/* Holographic sheen */}
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background: `radial-gradient(120% 60% at 0% 0%, rgba(${tc},0.08), transparent 55%), radial-gradient(120% 60% at 100% 0%, rgba(${CYAN},0.06), transparent 55%)`
+          }}
+        />
+
+        {/* Terminal window chrome */}
+        <div
+          className="relative flex items-center justify-between px-5 py-3"
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}
         >
           <div className="flex items-center gap-[6px]">
-            <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-full bg-red-500/50" />
-            <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-full bg-yellow-400/50" />
-            <div className="w-[10px] h-[10px] sm:w-[11px] sm:h-[11px] rounded-full bg-emerald-500/40" />
+            <div className="h-[11px] w-[11px] rounded-full bg-red-500/55" />
+            <div className="h-[11px] w-[11px] rounded-full bg-yellow-400/55" />
+            <div className="h-[11px] w-[11px] rounded-full bg-emerald-500/45" />
           </div>
-          <div className="flex items-center gap-1 sm:gap-1.5 font-mono text-[9px] sm:text-[10px] text-neutral-600 tracking-wide">
+          <div className="flex items-center gap-1.5 font-mono text-[10px] tracking-wide text-neutral-600">
             <span>git-wrapped</span>
             <span className="text-neutral-700">~</span>
             <span>roast.sh</span>
             <motion.span
               animate={{ opacity: [1, 0, 1] }}
               transition={{ duration: 1.1, repeat: Infinity }}
-              className="text-neutral-600"
+              className="text-accent-glow"
             >
               ▋
             </motion.span>
           </div>
-          <div className="w-10 sm:w-16" />
+          <div className="w-12" />
         </div>
 
-        {/* ── Card body ── */}
-        <div className="p-4 sm:p-6 lg:p-7">
-
-          {/* User header row: avatar+name on left, score on right */}
+        {/* Card body */}
+        <div className="relative p-5 sm:p-7">
+          {/* Header: avatar + name on left, grade+score on right */}
           <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
               {roast.avatar && (
                 <div className="relative flex-shrink-0">
+                  {/* glowing rank ring */}
+                  <div
+                    className="absolute -inset-1 rounded-full blur-[6px]"
+                    style={{ background: `rgba(${tc},0.45)` }}
+                  />
                   <img
                     src={roast.avatar}
                     alt=""
                     crossOrigin="anonymous"
-                    className="h-11 w-11 sm:h-14 sm:w-14 rounded-full"
-                    style={{ filter: "saturate(0.55) brightness(0.85)" }}
-                  />
-                  <div
-                    className="absolute inset-0 rounded-full"
+                    className="relative h-12 w-12 rounded-full sm:h-16 sm:w-16"
                     style={{
-                      boxShadow: `0 0 0 1.5px rgba(${BLUE},0.2), 0 0 14px rgba(${BLUE},0.12)`
+                      filter: "saturate(0.7) brightness(0.9)",
+                      boxShadow: `0 0 0 2px rgba(${tc},0.85), 0 0 20px rgba(${tc},0.5)`
                     }}
                   />
                 </div>
               )}
               <div className="min-w-0">
-                <div className="font-mono text-[13px] sm:text-[15px] font-semibold text-neutral-100 truncate">
+                <div className="truncate font-mono text-[14px] font-semibold text-neutral-100 sm:text-[16px]">
                   @{roast.username}
                 </div>
                 <div
-                  className="mt-0.5 font-mono text-[10px] sm:text-[11px] truncate leading-snug"
-                  style={{ color: `rgba(${BLUE},0.7)` }}
+                  className="mt-1 truncate font-sans text-[11px] font-medium sm:text-[12px]"
+                  style={{ color: `rgba(${tc},0.85)` }}
                 >
                   {roast.title}
                 </div>
               </div>
             </div>
 
-            {/* Chaos score — fixed width so it never squeezes the username */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.6 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.15, duration: 0.5, type: "spring", stiffness: 220, damping: 18 }}
-              className="flex-shrink-0 flex items-center gap-2.5"
-            >
-              {/* Grade badge */}
+            {/* Grade + score */}
+            <div className="flex flex-shrink-0 items-center gap-2.5">
               <div
                 className="flex flex-col items-center justify-center rounded-xl px-2.5 py-1.5 leading-none"
                 style={{
                   background: `rgba(${tc},0.1)`,
                   border: `1px solid rgba(${tc},0.45)`,
-                  boxShadow: `0 0 18px rgba(${tc},0.18), inset 0 0 12px rgba(${tc},0.08)`
+                  boxShadow: `0 0 18px rgba(${tc},0.2), inset 0 0 12px rgba(${tc},0.08)`
                 }}
               >
                 <span
@@ -116,27 +129,32 @@ export const RoastCard = forwardRef<HTMLDivElement, { roast: Roast }>(
                 </span>
               </div>
 
-              <div className="text-right">
+              {/* Score with aura */}
+              <div className="relative text-right">
                 <div
-                  className="font-mono font-bold leading-none"
+                  className="pointer-events-none absolute inset-0 -z-0 blur-2xl"
+                  style={{ background: `radial-gradient(circle, rgba(${tc},0.45), transparent 70%)` }}
+                />
+                <div
+                  className="relative font-mono font-bold leading-none"
                   style={{
-                    fontSize: "clamp(2rem, 8vw, 3rem)",
+                    fontSize: "clamp(2.2rem, 9vw, 3.25rem)",
                     color: `rgb(${tc})`,
-                    textShadow: `0 0 24px rgba(${tc},0.55), 0 0 48px rgba(${tc},0.2)`
+                    textShadow: `0 0 26px rgba(${tc},0.6), 0 0 52px rgba(${tc},0.25)`
                   }}
                 >
                   {roast.score}
                 </div>
-                <div className="mt-0.5 font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-neutral-600">
+                <div className="relative mt-0.5 font-mono text-[8px] uppercase tracking-[0.2em] text-neutral-600 sm:text-[9px]">
                   chaos
                 </div>
               </div>
-            </motion.div>
+            </div>
           </div>
 
-          {/* Animated score bar */}
+          {/* Score bar */}
           <div
-            className="mt-4 sm:mt-5 h-[2px] sm:h-[3px] w-full rounded-full overflow-hidden"
+            className="mt-5 h-[3px] w-full overflow-hidden rounded-full"
             style={{ background: "rgba(255,255,255,0.06)" }}
           >
             <motion.div
@@ -145,13 +163,13 @@ export const RoastCard = forwardRef<HTMLDivElement, { roast: Roast }>(
               transition={{ delay: 0.35, duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
               className="h-full rounded-full"
               style={{
-                background: `linear-gradient(90deg, rgba(${tc},0.45) 0%, rgb(${tc}) 100%)`,
-                boxShadow: `0 0 10px rgba(${tc},0.7)`
+                background: `linear-gradient(90deg, rgba(${tc},0.45), rgb(${tc}))`,
+                boxShadow: `0 0 10px rgba(${tc},0.8)`
               }}
             />
           </div>
 
-          {/* Tier name + rarity — the shareable flex line */}
+          {/* Tier name + rarity */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -159,65 +177,71 @@ export const RoastCard = forwardRef<HTMLDivElement, { roast: Roast }>(
             className="mt-2.5 flex items-center justify-between gap-2"
           >
             <span
-              className="font-mono text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.08em] truncate"
+              className="truncate font-mono text-[11px] font-bold uppercase tracking-[0.08em] sm:text-[12px]"
               style={{ color: `rgb(${tc})` }}
             >
               {roast.tier.name}
             </span>
-            <span className="font-mono text-[9px] sm:text-[10px] text-neutral-500 flex-shrink-0">
+            <span className="flex-shrink-0 font-mono text-[9px] text-neutral-500 sm:text-[10px]">
               {roast.tier.rarity}
             </span>
           </motion.div>
 
-          {/* Roast lines — staggered reveal */}
-          <ul className="mt-5 sm:mt-6 flex flex-col gap-3 sm:gap-[14px]">
+          {/* Roast lines — each in its own bounding box with a neon icon chip */}
+          <ul className="mt-5 flex flex-col gap-2.5">
             {roast.lines.map((l, i) => (
               <motion.li
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.5 + i * 0.1, duration: 0.38, ease: "easeOut" }}
-                className="flex items-start gap-2.5 sm:gap-3"
+                transition={{ delay: 0.55 + i * 0.09, duration: 0.38, ease: "easeOut" }}
+                className="flex items-start gap-3 rounded-xl p-3"
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.06)"
+                }}
               >
-                <span className="flex-shrink-0 text-sm sm:text-[15px] leading-snug mt-px">
+                <span
+                  className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-[15px]"
+                  style={{
+                    background: `rgba(${CYAN},0.08)`,
+                    border: `1px solid rgba(${CYAN},0.18)`,
+                    boxShadow: `0 0 10px rgba(${CYAN},0.1)`
+                  }}
+                >
                   {l.emoji}
                 </span>
-                <span className="text-[12.5px] sm:text-[13.5px] leading-relaxed text-neutral-300 font-sans">
+                <span className="font-sans text-[12.5px] leading-relaxed text-neutral-300 sm:text-[13.5px]">
                   {l.text}
                 </span>
               </motion.li>
             ))}
           </ul>
 
-          {/* Footer stats — stack on very small screens */}
+          {/* Footer stats */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5 + roast.lines.length * 0.1 + 0.2, duration: 0.5 }}
-            className="mt-5 sm:mt-7 flex flex-col xs:flex-row items-start xs:items-center justify-between gap-1 pt-4 sm:pt-5 font-mono text-[10px] sm:text-[11px] text-neutral-700"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}
+            transition={{ delay: 0.55 + roast.lines.length * 0.09 + 0.2, duration: 0.5 }}
+            className="mt-6 flex flex-col items-start justify-between gap-1 pt-4 font-mono text-[10px] text-neutral-700 xs:flex-row xs:items-center sm:text-[11px]"
+            style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
           >
-            <span
-              className="tracking-widest"
-              style={{ color: `rgba(${BLUE},0.35)` }}
-            >
+            <span className="tracking-widest" style={{ color: `rgba(${CYAN},0.4)` }}>
               git wrapped
             </span>
             <span className="text-right text-neutral-600">
-              {roast.totalCommits.toLocaleString("en-US")} commits
-              {" · "}
-              {roast.publicRepos} repos
+              {roast.totalCommits.toLocaleString("en-US")} commits · {roast.publicRepos} repos
               {roast.topLanguage ? ` · ${roast.topLanguage}` : ""}
             </span>
           </motion.div>
         </div>
 
-        {/* Subtle scanline texture */}
+        {/* Scanline texture */}
         <div
-          className="absolute inset-0 pointer-events-none rounded-2xl"
+          className="pointer-events-none absolute inset-0 rounded-3xl"
           style={{
             backgroundImage:
-              "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.04) 3px, rgba(0,0,0,0.04) 4px)"
+              "repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.05) 3px, rgba(0,0,0,0.05) 4px)"
           }}
         />
       </div>

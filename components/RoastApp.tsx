@@ -10,6 +10,7 @@ import { BackgroundAtmosphere } from "@/components/BackgroundAtmosphere";
 import { HallOfShame, type HallEntry } from "@/components/HallOfShame";
 import { Leaderboard } from "@/components/Leaderboard";
 import { LiveCount } from "@/components/LiveCount";
+import { LiveTicker } from "@/components/LiveTicker";
 import { Download, Share2, Copy, Check } from "lucide-react";
 import type { Roast } from "@/lib/roast";
 
@@ -22,7 +23,7 @@ type State =
 const PLACEHOLDERS = ["torvalds", "sindresorhus", "gaearon", "yyx990803", "tj"];
 const HALL_KEY = "git-wrapped-hall";
 const HALL_MAX = 6;
-const BLUE = "56, 189, 248";
+const BLUE = "0, 240, 255";
 
 function loadHall(): HallEntry[] {
   if (typeof window === "undefined") return [];
@@ -154,6 +155,14 @@ export default function RoastApp() {
           isLoading={state.status === "loading"}
         />
 
+        {/* ── Live feed ticker (recent roasts) ── */}
+        <div className="mt-5 flex w-full justify-center">
+          <LiveTicker
+            refreshKey={statsKey}
+            onSelect={name => { setUsername(name); run(name); }}
+          />
+        </div>
+
         {/* ── Result area ── */}
         <div className="mt-10 sm:mt-14 w-full flex flex-col items-center">
 
@@ -203,62 +212,67 @@ export default function RoastApp() {
               transition={{ duration: 0.45, ease: "easeOut" }}
               className="w-full flex flex-col items-center gap-6 sm:gap-8"
             >
-              {/* Roast card */}
-              <div className="w-full flex justify-center">
-                <RoastCard ref={cardRef} roast={state.roast} />
-              </div>
+              {/* Roast card + docked action bar */}
+              <div className="flex w-full flex-col items-center">
+                <div className="w-full flex justify-center">
+                  <RoastCard ref={cardRef} roast={state.roast} />
+                </div>
 
-              {/* Action buttons */}
-              <motion.div
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.25 }}
-                className="flex flex-wrap items-center justify-center gap-2"
-              >
-                {[
-                  { icon: Share2,  label: "share on X",   onClick: tweet,     active: false },
-                  { icon: Download, label: "download png", onClick: download,  active: false },
-                  { icon: copied ? Check : Copy, label: copied ? "copied!" : "copy link", onClick: copyLink, active: copied }
-                ].map((btn, i) => (
+                {/* Action bar — docked beneath the card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.25 }}
+                  className="relative z-10 -mt-3 flex w-full max-w-md items-center justify-center gap-1.5 rounded-2xl p-1.5"
+                  style={{
+                    background: "rgba(12,12,16,0.85)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    boxShadow: `inset 0 1px 0 rgba(255,255,255,0.06), 0 18px 40px rgba(0,0,0,0.6), 0 0 30px rgba(${BLUE},0.08)`
+                  }}
+                >
+                  {/* primary: share on X (cyan) */}
                   <motion.button
-                    key={i}
-                    onClick={btn.onClick}
+                    onClick={tweet}
                     whileHover={{ scale: 1.04 }}
-                    whileTap={{ scale: 0.96 }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-sm transition-all duration-200"
-                    style={
-                      btn.active
-                        ? {
-                            background: `rgba(${BLUE},0.1)`,
-                            border: `1px solid rgba(${BLUE},0.4)`,
-                            color: `rgb(${BLUE})`
-                          }
-                        : {
-                            background: "rgba(255,255,255,0.04)",
-                            border: "1px solid rgba(255,255,255,0.08)",
-                            color: "rgb(163,163,163)"
-                          }
-                    }
-                    onMouseEnter={e => {
-                      if (!btn.active) {
-                        (e.currentTarget as HTMLElement).style.borderColor = `rgba(${BLUE},0.3)`;
-                        (e.currentTarget as HTMLElement).style.color = `rgb(${BLUE})`;
-                        (e.currentTarget as HTMLElement).style.background = `rgba(${BLUE},0.06)`;
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      if (!btn.active) {
-                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
-                        (e.currentTarget as HTMLElement).style.color = "rgb(163,163,163)";
-                        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
-                      }
-                    }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 font-mono text-xs font-bold uppercase tracking-wide sm:text-sm"
+                    style={{ background: "#00F0FF", color: "#000", boxShadow: `0 0 20px rgba(${BLUE},0.45)` }}
                   >
-                    <btn.icon size={14} strokeWidth={1.5} />
-                    <span className="text-xs sm:text-sm">{btn.label}</span>
+                    <Share2 size={14} strokeWidth={2.4} />
+                    <span>share</span>
                   </motion.button>
-                ))}
-              </motion.div>
+
+                  {/* download */}
+                  <motion.button
+                    onClick={download}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 font-mono text-xs text-neutral-300 transition-colors sm:text-sm"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = `rgb(${BLUE})`; (e.currentTarget as HTMLElement).style.borderColor = `rgba(${BLUE},0.35)`; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgb(212,212,212)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)"; }}
+                  >
+                    <Download size={14} strokeWidth={1.8} />
+                    <span>png</span>
+                  </motion.button>
+
+                  {/* copy link */}
+                  <motion.button
+                    onClick={copyLink}
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="flex flex-1 items-center justify-center gap-2 rounded-xl px-3 py-2.5 font-mono text-xs transition-colors sm:text-sm"
+                    style={
+                      copied
+                        ? { background: `rgba(${BLUE},0.12)`, border: `1px solid rgba(${BLUE},0.4)`, color: `rgb(${BLUE})` }
+                        : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgb(212,212,212)" }
+                    }
+                  >
+                    {copied ? <Check size={14} strokeWidth={2.2} /> : <Copy size={14} strokeWidth={1.8} />}
+                    <span>{copied ? "copied" : "link"}</span>
+                  </motion.button>
+                </motion.div>
+              </div>
 
               {/* Metadata line */}
               <motion.p

@@ -3,47 +3,42 @@
 import { motion } from "framer-motion";
 
 export function HeroSection() {
-  const titleVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: (i: number) => ({
-      opacity: 1,
-      y: 0,
-      transition: {
-        delay: i * 0.1,
-        duration: 0.6,
-        ease: "easeOut"
-      }
-    })
-  };
-
   return (
     <motion.header
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="text-center mb-8 sm:mb-12 lg:mb-16"
+      className="text-center mb-7 sm:mb-10"
     >
-      {/* Main title with accent */}
+      {/* eyebrow pill */}
+      <motion.div
+        initial={{ opacity: 0, y: -8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.05, duration: 0.5 }}
+        className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full px-3.5 py-1.5"
+        style={{
+          background: "rgba(0,240,255,0.06)",
+          border: "1px solid rgba(0,240,255,0.22)",
+          boxShadow: "0 0 22px rgba(0,240,255,0.12)"
+        }}
+      >
+        <span className="h-1.5 w-1.5 rounded-full bg-accent-glow animate-glow-pulse" />
+        <span className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.22em] text-accent-glow/90">
+          your commits are about to suffer
+        </span>
+      </motion.div>
+
+      {/* Massive title */}
       <motion.h1
-        className="text-4xl sm:text-6xl lg:text-8xl font-mono font-bold tracking-tighter mb-3 sm:mb-4"
-        initial={{ opacity: 0, scale: 0.9 }}
+        initial={{ opacity: 0, scale: 0.92 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.8, ease: "easeOut" }}
+        className="font-display font-bold tracking-tighter leading-[0.9] text-[3.4rem] sm:text-8xl lg:text-9xl"
       >
-        <span className="text-white">git</span>{" "}
-        <motion.span
-          className="relative inline-block"
-          animate={{
-            textShadow: [
-              "0 0 20px rgba(0, 255, 136, 0.3)",
-              "0 0 40px rgba(0, 255, 136, 0.5)",
-              "0 0 20px rgba(0, 255, 136, 0.3)"
-            ]
-          }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          <span className="text-accent-glow">wrapped</span>
-        </motion.span>
+        <span className="text-white drop-shadow-[0_2px_24px_rgba(255,255,255,0.18)]">
+          git
+        </span>{" "}
+        <span className="text-glow-cyan">wrapped</span>
       </motion.h1>
 
       {/* Subtitle */}
@@ -51,18 +46,23 @@ export function HeroSection() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.6 }}
-        className="text-sm sm:text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed px-2"
+        className="mx-auto mt-5 max-w-xl px-2 font-sans text-sm sm:text-lg leading-relaxed text-neutral-400"
       >
-        Paste a GitHub username. Get <span className="text-accent-glow font-semibold">roasted</span> by your
-        own commit history. No login, no nonsense.
+        Drop a GitHub username. Get{" "}
+        <span className="font-semibold text-accent-glow">roasted</span> by your own
+        commit history, ranked, and immortalised on the leaderboard.
       </motion.p>
 
-      {/* Decorative line */}
+      {/* Decorative neon line */}
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
         transition={{ delay: 0.5, duration: 0.8 }}
-        className="w-12 h-px bg-gradient-to-r from-transparent via-accent-glow to-transparent mx-auto mt-8"
+        className="mx-auto mt-7 h-px w-16"
+        style={{
+          background: "linear-gradient(to right, transparent, #00F0FF, transparent)",
+          boxShadow: "0 0 12px rgba(0,240,255,0.8)"
+        }}
       />
     </motion.header>
   );

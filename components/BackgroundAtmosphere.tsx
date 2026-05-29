@@ -1,84 +1,46 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-
+/**
+ * Ambient backdrop: deep-black base, an animated panning neon grid, and two
+ * slow-drifting radial "aurora" blobs (cyan + purple) anchored in opposite
+ * corners to give the page atmospheric, floating-over-the-matrix depth.
+ */
 export function BackgroundAtmosphere() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let animId: number;
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-    resize();
-    window.addEventListener("resize", resize);
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      ctx.fillStyle = "#0a0a0a";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Isometric grid lines — electric blue tint
-      ctx.strokeStyle = "rgba(56, 189, 248, 0.035)";
-      ctx.lineWidth = 1;
-
-      const tileW = 48;
-      const tileH = 28;
-      const drift = (Date.now() * 0.006) % (tileW * 2);
-      const cols = Math.ceil(canvas.width / tileW) + 4;
-      const rows = Math.ceil(canvas.height / tileH) + 4;
-
-      for (let row = -2; row < rows; row++) {
-        for (let col = -2; col < cols; col++) {
-          const sx = col * tileW + (row % 2) * (tileW / 2) - drift;
-          const sy = row * tileH;
-
-          // right edge
-          ctx.beginPath();
-          ctx.moveTo(sx, sy);
-          ctx.lineTo(sx + tileW / 2, sy + tileH);
-          ctx.stroke();
-
-          // left edge
-          ctx.beginPath();
-          ctx.moveTo(sx, sy);
-          ctx.lineTo(sx - tileW / 2, sy + tileH);
-          ctx.stroke();
-        }
-      }
-
-      // Central radial glow — blue
-      const cx = canvas.width / 2;
-      const cy = canvas.height * 0.38;
-      const r = Math.max(canvas.width, canvas.height) * 0.65;
-      const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
-      g.addColorStop(0, "rgba(56, 189, 248, 0.06)");
-      g.addColorStop(0.45, "rgba(56, 189, 248, 0.02)");
-      g.addColorStop(1, "rgba(56, 189, 248, 0)");
-      ctx.fillStyle = g;
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      animId = requestAnimationFrame(draw);
-    };
-
-    draw();
-    return () => {
-      window.removeEventListener("resize", resize);
-      cancelAnimationFrame(animId);
-    };
-  }, []);
-
   return (
-    <canvas
-      ref={canvasRef}
-      className="fixed inset-0 z-0 pointer-events-none"
-    />
+    <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none" aria-hidden>
+      {/* base void */}
+      <div className="absolute inset-0 bg-black" />
+
+      {/* animated neon grid */}
+      <div className="absolute inset-0 neon-grid" />
+
+      {/* aurora — cyan, top-left */}
+      <div
+        className="absolute -top-1/3 -left-1/4 h-[70vh] w-[70vh] rounded-full blur-[120px] animate-aurora"
+        style={{ background: "radial-gradient(circle, rgba(0,240,255,0.16), transparent 65%)" }}
+      />
+      {/* aurora — magenta/purple, bottom-right */}
+      <div
+        className="absolute -bottom-1/3 -right-1/4 h-[75vh] w-[75vh] rounded-full blur-[130px] animate-aurora"
+        style={{
+          background: "radial-gradient(circle, rgba(168,85,247,0.16), transparent 65%)",
+          animationDelay: "-7s"
+        }}
+      />
+      {/* faint center cyan lift */}
+      <div
+        className="absolute left-1/2 top-[34%] h-[55vh] w-[80vw] -translate-x-1/2 rounded-full blur-[140px]"
+        style={{ background: "radial-gradient(ellipse, rgba(0,240,255,0.07), transparent 70%)" }}
+      />
+
+      {/* vignette so content pops off the matrix */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 70% at 50% 30%, transparent 40%, rgba(0,0,0,0.55) 100%)"
+        }}
+      />
+    </div>
   );
 }

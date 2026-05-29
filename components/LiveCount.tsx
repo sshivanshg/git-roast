@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { Flame, Users, Eye } from "lucide-react";
 
-const BLUE = "56, 189, 248";
+const BLUE = "0, 240, 255";
 const POLL_MS = 10_000;
 
 type Stats = { roasts: number; uniqueDevs: number; visitors: number };
