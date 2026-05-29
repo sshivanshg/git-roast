@@ -41,9 +41,9 @@ export function GlassInput({
           className="absolute inset-0 rounded-2xl bg-accent-glow/5 blur-xl -z-10"
           animate={{
             boxShadow: [
-              "0 0 20px rgba(0, 255, 136, 0.2), 0 0 40px rgba(0, 255, 136, 0.1)",
-              "0 0 40px rgba(0, 255, 136, 0.3), 0 0 80px rgba(0, 255, 136, 0.15)",
-              "0 0 20px rgba(0, 255, 136, 0.2), 0 0 40px rgba(0, 255, 136, 0.1)"
+              "0 0 20px rgba(56, 189, 248, 0.2), 0 0 40px rgba(56, 189, 248, 0.1)",
+              "0 0 40px rgba(56, 189, 248, 0.3), 0 0 80px rgba(56, 189, 248, 0.15)",
+              "0 0 20px rgba(56, 189, 248, 0.2), 0 0 40px rgba(56, 189, 248, 0.1)"
             ]
           }}
           transition={{ duration: 2, repeat: Infinity }}
@@ -68,9 +68,9 @@ export function GlassInput({
         <div className="absolute inset-0 rounded-2xl bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
 
         {/* Content */}
-        <div className="relative flex items-center gap-3 px-6 py-4 sm:py-5">
+        <div className="relative flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4">
           {/* Terminal $ symbol */}
-          <span className="text-neutral-600 font-mono text-lg select-none">
+          <span className="text-neutral-600 font-mono text-base sm:text-lg select-none flex-shrink-0">
             $
           </span>
 
@@ -86,14 +86,14 @@ export function GlassInput({
             spellCheck={false}
             autoCapitalize="off"
             autoCorrect="off"
+            autoComplete="off"
             disabled={isLoading}
             className={`
-              flex-1 bg-transparent
-              font-mono text-lg outline-none
+              flex-1 min-w-0 bg-transparent
+              font-mono text-base sm:text-lg outline-none
               placeholder:text-neutral-600
               text-white
               disabled:opacity-50 disabled:cursor-not-allowed
-              transition-colors
             `}
           />
 
@@ -105,10 +105,10 @@ export function GlassInput({
             whileTap={{ scale: isLoading ? 1 : 0.95 }}
             className={`
               relative flex-shrink-0
-              px-5 py-2 rounded-lg
+              px-3 sm:px-5 py-1.5 sm:py-2 rounded-lg
               font-semibold font-mono text-sm
               transition-all duration-200
-              flex items-center gap-2
+              flex items-center gap-1.5
               ${
                 isLoading
                   ? "bg-neutral-800 text-neutral-500 cursor-not-allowed"
@@ -120,10 +120,11 @@ export function GlassInput({
               <motion.span
                 animate={{ opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
-                className="flex items-center gap-1"
+                className="flex items-center gap-1 whitespace-nowrap"
               >
                 <span className="inline-block w-1 h-1 bg-neutral-600 rounded-full animate-blink" />
-                compiling...
+                <span className="hidden sm:inline">compiling...</span>
+                <span className="sm:hidden">...</span>
               </motion.span>
             ) : (
               <>
@@ -132,7 +133,7 @@ export function GlassInput({
                   animate={{ x: [0, 3, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity }}
                 >
-                  <ArrowRight size={16} />
+                  <ArrowRight size={14} />
                 </motion.div>
               </>
             )}

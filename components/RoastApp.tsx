@@ -124,7 +124,7 @@ export default function RoastApp() {
     <>
       <BackgroundAtmosphere />
 
-      <main className="relative z-20 mx-auto flex min-h-screen max-w-5xl flex-col items-center px-5 py-16 sm:py-24 lg:py-32 pb-20">
+      <main className="relative z-20 mx-auto flex min-h-screen max-w-5xl flex-col items-center px-4 sm:px-5 py-10 sm:py-20 lg:py-28 pb-16">
 
         <HeroSection />
 
@@ -137,7 +137,7 @@ export default function RoastApp() {
         />
 
         {/* ── Result area ── */}
-        <div className="mt-16 w-full flex flex-col items-center">
+        <div className="mt-10 sm:mt-14 w-full flex flex-col items-center">
 
           {state.status === "loading" && (
             <motion.div
@@ -183,7 +183,7 @@ export default function RoastApp() {
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: "easeOut" }}
-              className="w-full flex flex-col items-center gap-8"
+              className="w-full flex flex-col items-center gap-6 sm:gap-8"
             >
               {/* Roast card */}
               <div className="w-full flex justify-center">
@@ -195,7 +195,7 @@ export default function RoastApp() {
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.25 }}
-                className="flex flex-wrap items-center justify-center gap-2.5"
+                className="flex flex-wrap items-center justify-center gap-2"
               >
                 {[
                   { icon: Share2,  label: "share on X",   onClick: tweet,     active: false },

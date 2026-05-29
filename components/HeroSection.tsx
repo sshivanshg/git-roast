@@ -21,11 +21,11 @@ export function HeroSection() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8 }}
-      className="text-center mb-12 sm:mb-16"
+      className="text-center mb-8 sm:mb-12 lg:mb-16"
     >
       {/* Main title with accent */}
       <motion.h1
-        className="text-5xl sm:text-7xl lg:text-8xl font-mono font-bold tracking-tighter mb-4"
+        className="text-4xl sm:text-6xl lg:text-8xl font-mono font-bold tracking-tighter mb-3 sm:mb-4"
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, duration: 0.8, ease: "easeOut" }}
@@ -51,7 +51,7 @@ export function HeroSection() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3, duration: 0.6 }}
-        className="text-lg sm:text-xl text-neutral-400 max-w-2xl mx-auto leading-relaxed"
+        className="text-sm sm:text-lg text-neutral-400 max-w-2xl mx-auto leading-relaxed px-2"
       >
         Paste a GitHub username. Get <span className="text-accent-glow font-semibold">roasted</span> by your
         own commit history. No login, no nonsense.
