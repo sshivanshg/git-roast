@@ -4,18 +4,55 @@
 
 html,
 body {
-  background: #0a0a0a;
+  background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
   color: #ededed;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  overflow-x: hidden;
 }
 
+/* Selection styling */
 ::selection {
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(0, 255, 136, 0.2);
+  color: #ffffff;
 }
 
-/* thin, quiet scrollbar */
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 136, 0.2);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 255, 136, 0.4);
+}
+
 * {
   scrollbar-width: thin;
-  scrollbar-color: #262626 transparent;
+  scrollbar-color: rgba(0, 255, 136, 0.2) transparent;
+}
+
+/* Smooth transitions */
+button,
+input,
+a {
+  transition: all 0.2s ease;
+}
+
+/* Focus visible states for accessibility */
+button:focus-visible,
+input:focus-visible,
+a:focus-visible {
+  outline: 2px solid rgba(0, 255, 136, 0.5);
+  outline-offset: 2px;
 }

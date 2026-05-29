@@ -2,7 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toPng } from "html-to-image";
+import { motion } from "framer-motion";
 import { RoastCard } from "@/components/RoastCard";
+import { HeroSection } from "@/components/HeroSection";
+import { GlassInput } from "@/components/GlassInput";
+import { BackgroundAtmosphere } from "@/components/BackgroundAtmosphere";
+import { RecentVictimsTicker } from "@/components/RecentVictimsTicker";
+import { Download, Share2, Copy, Check } from "lucide-react";
 import type { Roast } from "@/lib/roast";
 
 type State =
@@ -25,7 +31,6 @@ export default function RoastApp() {
     if (!clean) return;
     setState({ status: "loading" });
     setCopied(false);
-    // reflect in URL so the result is shareable + gets the OG image
     window.history.replaceState(null, "", `/?u=${encodeURIComponent(clean)}`);
     try {
       const res = await fetch(`/api/roast?u=${encodeURIComponent(clean)}`);
@@ -40,7 +45,6 @@ export default function RoastApp() {
     }
   }, []);
 
-  // auto-run if the page is opened with ?u=
   useEffect(() => {
     const u = new URLSearchParams(window.location.search).get("u");
     if (u) {
@@ -48,11 +52,6 @@ export default function RoastApp() {
       run(u);
     }
   }, [run]);
-
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    run(username);
-  };
 
   const download = async () => {
     if (!cardRef.current) return;
@@ -89,95 +88,134 @@ export default function RoastApp() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center px-5 py-20 sm:py-32">
-      <header className="w-full text-center">
-        <h1 className="text-center text-4xl font-semibold tracking-tight sm:text-5xl">
-          git <span className="text-neutral-500">wrapped</span>
-        </h1>
-        <p className="mt-4 max-w-lg mx-auto text-center text-base leading-relaxed text-neutral-500">
-          Paste a GitHub username. Get roasted by your own commit history.
-          No login, no nonsense.
-        </p>
-      </header>
+    <>
+      <BackgroundAtmosphere />
 
-      {/* input */}
-      <form onSubmit={onSubmit} className="mt-8 w-full max-w-md" role="search">
-        <div className="flex items-center gap-2 rounded-xl border border-line bg-panel px-3 transition-colors focus-within:border-neutral-600">
-          <span className="select-none text-neutral-600">$</span>
-          <input
-            autoFocus
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            placeholder={placeholder}
-            spellCheck={false}
-            autoCapitalize="off"
-            autoCorrect="off"
-            className="w-full bg-transparent py-3 text-[15px] outline-none placeholder:text-neutral-600"
-          />
-          <button
-            type="submit"
-            disabled={state.status === "loading"}
-            className="rounded-lg bg-neutral-100 px-4 py-1.5 text-sm font-medium text-black transition hover:bg-white active:scale-95 disabled:opacity-40"
-          >
-            {state.status === "loading" ? "…" : "roast"}
-          </button>
+      <main className="relative z-20 mx-auto flex min-h-screen max-w-5xl flex-col items-center px-5 py-16 sm:py-24 lg:py-32 pb-24">
+        {/* Hero Section */}
+        <HeroSection />
+
+        {/* Input Section */}
+        <GlassInput
+          placeholder={placeholder}
+          value={username}
+          onChange={setUsername}
+          onSubmit={() => run(username)}
+          isLoading={state.status === "loading"}
+        />
+
+        {/* Result Area */}
+        <div className="mt-16 w-full flex flex-col items-center">
+          {state.status === "loading" && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col items-center gap-4"
+            >
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-8 h-8 border-2 border-accent-glow border-transparent border-t-accent-glow rounded-full"
+              />
+              <p className="text-sm text-neutral-400 font-mono">
+                analyzing commit history<span className="animate-blink">_</span>
+              </p>
+            </motion.div>
+          )}
+
+          {state.status === "error" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-sm text-red-400/80 font-mono bg-red-500/5 px-6 py-4 rounded-lg border border-red-500/20"
+            >
+              {state.message}
+            </motion.div>
+          )}
+
+          {state.status === "done" && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="w-full flex flex-col items-center gap-8"
+            >
+              {/* Roast Card */}
+              <div className="w-full flex justify-center">
+                <RoastCard ref={cardRef} roast={state.roast} />
+              </div>
+
+              {/* Action Buttons */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="flex flex-wrap items-center justify-center gap-3"
+              >
+                {[
+                  { icon: Share2, label: "share on X", onClick: tweet },
+                  { icon: Download, label: "download png", onClick: download },
+                  {
+                    icon: copied ? Check : Copy,
+                    label: copied ? "copied ✓" : "copy link",
+                    onClick: copyLink
+                  }
+                ].map((btn, idx) => (
+                  <motion.button
+                    key={idx}
+                    onClick={btn.onClick}
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    className={`
+                      flex items-center gap-2 px-4 py-2 rounded-lg
+                      border font-mono text-sm
+                      transition-all duration-200
+                      ${
+                        copied && btn.label.includes("copy")
+                          ? "border-accent-glow/60 bg-accent-glow/10 text-accent-glow"
+                          : "border-neutral-700/50 bg-white/5 text-neutral-400 hover:border-neutral-600/80 hover:bg-white/10"
+                      }
+                    `}
+                  >
+                    <btn.icon size={16} />
+                    <span className="text-xs sm:text-sm">{btn.label}</span>
+                  </motion.button>
+                ))}
+              </motion.div>
+
+              {/* Info Text */}
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="text-xs text-neutral-600 font-mono text-center"
+              >
+                based on {state.roast.sampleSize} recent commits · affectionate, not accurate
+              </motion.p>
+            </motion.div>
+          )}
         </div>
-      </form>
 
-      {/* result area */}
-      <div className="mt-10 flex w-full flex-col items-center">
-        {state.status === "loading" && (
-          <p className="animate-pulse text-sm text-neutral-500">
-            reading commits<span className="animate-blink">_</span>
-          </p>
-        )}
-
-        {state.status === "error" && (
-          <p className="text-sm text-neutral-400">{state.message}</p>
-        )}
-
-        {state.status === "done" && (
-          <div className="flex w-full flex-col items-center gap-5 animate-rise">
-            <RoastCard ref={cardRef} roast={state.roast} />
-
-            <div className="flex flex-wrap items-center justify-center gap-2">
-              <button
-                onClick={tweet}
-                className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:border-neutral-600 hover:text-neutral-100"
-              >
-                share on X
-              </button>
-              <button
-                onClick={download}
-                className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:border-neutral-600 hover:text-neutral-100"
-              >
-                download png
-              </button>
-              <button
-                onClick={copyLink}
-                className="rounded-lg border border-line bg-panel px-3 py-1.5 text-sm text-neutral-300 transition-colors hover:border-neutral-600 hover:text-neutral-100"
-              >
-                {copied ? "copied ✓" : "copy link"}
-              </button>
-            </div>
-
-            <p className="text-xs text-neutral-600">
-              based on {state.roast.sampleSize} recent commits · affectionate, not accurate
-            </p>
-          </div>
-        )}
-      </div>
-
-      <footer className="mt-auto pt-12">
-        <a
-          href="https://www.linkedin.com/in/connect-shivansh/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-xs text-neutral-700 hover:text-neutral-500 transition-colors"
+        {/* Footer */}
+        <motion.footer
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+          className="mt-auto pt-16"
         >
-          connect
-        </a>
-      </footer>
-    </main>
+          <a
+            href="https://www.linkedin.com/in/connect-shivansh/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs text-neutral-700 hover:text-accent-glow transition-colors duration-200 font-mono"
+          >
+            connect
+          </a>
+        </motion.footer>
+      </main>
+
+      {/* Ticker */}
+      <RecentVictimsTicker />
+    </>
   );
 }
