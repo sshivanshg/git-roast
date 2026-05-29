@@ -18,6 +18,7 @@ export async function GET(req: Request) {
     const r = await computeRoast(username);
     const clip = (s: string) => (s.length > 150 ? s.slice(0, 148) + "…" : s);
     const top = r.lines.slice(0, 2).map((l) => ({ ...l, text: clip(l.text) }));
+    const tc = `rgb(${r.tier.color})`;
     return new ImageResponse(
       (
         <div
@@ -62,27 +63,52 @@ export async function GET(req: Request) {
                 <div style={{ display: "flex", fontSize: 26, color: "#8a8a8a" }}>
                   {r.title}
                 </div>
+                <div style={{ display: "flex", fontSize: 22, color: tc, marginTop: 6, letterSpacing: 1 }}>
+                  {`${r.tier.name} · ${r.tier.rarity}`}
+                </div>
               </div>
             </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "flex-end"
-              }}
-            >
-              <div style={{ display: "flex", fontSize: 84, fontWeight: 700, color: "#f5f5f5" }}>
-                {String(r.score)}
+            <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+              {/* grade badge */}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  padding: "14px 22px",
+                  borderRadius: 20,
+                  background: `rgba(${r.tier.color},0.12)`,
+                  border: `2px solid rgba(${r.tier.color},0.5)`
+                }}
+              >
+                <div style={{ display: "flex", fontSize: 60, fontWeight: 800, color: tc }}>
+                  {r.tier.grade}
+                </div>
+                <div style={{ display: "flex", fontSize: 16, color: "#777", letterSpacing: 4 }}>
+                  RANK
+                </div>
               </div>
               <div
                 style={{
                   display: "flex",
-                  fontSize: 20,
-                  color: "#6a6a6a",
-                  letterSpacing: 4
+                  flexDirection: "column",
+                  alignItems: "flex-end"
                 }}
               >
-                CHAOS
+                <div style={{ display: "flex", fontSize: 84, fontWeight: 700, color: tc }}>
+                  {String(r.score)}
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    fontSize: 20,
+                    color: "#6a6a6a",
+                    letterSpacing: 4
+                  }}
+                >
+                  CHAOS
+                </div>
               </div>
             </div>
           </div>

@@ -2,36 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Trophy, Zap, Users } from "lucide-react";
+import { Trophy, Users } from "lucide-react";
 import type { LeaderboardEntry } from "@/lib/leaderboard";
+import { tierForScore } from "@/lib/score";
 
-const BLUE   = "56, 189, 248";
-const PURPLE = "168, 85, 247";
+const BLUE = "56, 189, 248";
 
 type Stats = { roasts: number; uniqueDevs: number; visitors: number };
 type Data = { entries: LeaderboardEntry[]; total: number; stats?: Stats; live: boolean };
 
-// Score → accent color
-function rowColor(score: number) {
-  if (score >= 85) return `rgb(${PURPLE})`;
-  if (score >= 60) return `rgb(${BLUE})`;
-  return "rgb(148,163,184)";
-}
-
-// Top-3 rank badge
+// Top-3 medal, otherwise a muted rank number.
 function RankBadge({ rank }: { rank: number }) {
-  const colors: Record<number, string> = {
-    1: "rgba(251,191,36,0.85)",  // gold
-    2: "rgba(148,163,184,0.8)",  // silver
-    3: "rgba(180,120,70,0.8)"    // bronze
-  };
+  const medal: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
   if (rank <= 3) {
     return (
-      <span
-        className="font-mono text-[11px] font-bold w-5 text-center flex-shrink-0"
-        style={{ color: colors[rank] }}
-      >
-        {rank === 1 ? "▲" : rank === 2 ? "▲" : "▲"}
+      <span className="w-5 text-center text-[13px] flex-shrink-0 leading-none">
+        {medal[rank]}
       </span>
     );
   }
@@ -53,7 +39,6 @@ const POLL_MS = 12_000;
 
 export function Leaderboard({ onSelect, currentUsername, refreshKey = 0 }: Props) {
   const [data, setData] = useState<Data | null>(null);
-  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let alive = true;
@@ -115,9 +100,7 @@ export function Leaderboard({ onSelect, currentUsername, refreshKey = 0 }: Props
     );
   }
 
-  const PREVIEW_COUNT = 5;
-  const visible = expanded ? data.entries : data.entries.slice(0, PREVIEW_COUNT);
-  const hasMore = data.entries.length > PREVIEW_COUNT;
+  const entries = data.entries;
 
   return (
     <motion.section
@@ -140,7 +123,7 @@ export function Leaderboard({ onSelect, currentUsername, refreshKey = 0 }: Props
                 style={{
                   background: `rgb(${BLUE})`,
                   boxShadow: `0 0 6px rgba(${BLUE},0.8)`,
-                  animation: "pulse 2s ease-in-out infinite"
+                  animation: "lb-pulse 2s ease-in-out infinite"
                 }}
               />
               <span className="font-mono text-[9px] uppercase tracking-widest text-neutral-600">
@@ -150,19 +133,17 @@ export function Leaderboard({ onSelect, currentUsername, refreshKey = 0 }: Props
           )}
         </div>
 
-        {data.total > 0 && (
-          <div className="flex items-center gap-1.5 text-neutral-700">
-            <Users size={11} strokeWidth={1.5} />
-            <span className="font-mono text-[10px]">
-              {data.total.toLocaleString("en-US")} roasted
-            </span>
-          </div>
-        )}
+        <div className="flex items-center gap-1.5 text-neutral-600">
+          <Users size={11} strokeWidth={1.5} />
+          <span className="font-mono text-[10px]">
+            {entries.length.toLocaleString("en-US")} ranked
+          </span>
+        </div>
       </div>
 
-      {/* Rank list */}
+      {/* Rank list — scrolls inside the box, no "show more" */}
       <div
-        className="rounded-2xl overflow-hidden"
+        className="relative rounded-2xl overflow-hidden"
         style={{
           background: "rgba(255,255,255,0.02)",
           border: "1px solid rgba(255,255,255,0.06)"
@@ -171,133 +152,130 @@ export function Leaderboard({ onSelect, currentUsername, refreshKey = 0 }: Props
         {/* Column headers */}
         <div
           className="flex items-center gap-3 px-4 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-neutral-700"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}
+          style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
         >
           <span className="w-5 text-center">#</span>
           <span className="w-7" />
           <span className="flex-1">developer</span>
-          <span className="w-20 text-right hidden sm:block">commits</span>
-          <span className="w-14 text-right">score</span>
+          <span className="w-9 text-center">rank</span>
+          <span className="w-16 text-right hidden sm:block">commits</span>
+          <span className="w-12 text-right">score</span>
         </div>
 
-        {visible.map((entry, i) => {
-          const rank = i + 1;
-          const isCurrent = entry.username === currentUsername;
-          return (
-            <motion.button
-              key={entry.username}
-              initial={{ opacity: 0, x: -8 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: i * 0.05, duration: 0.3, ease: "easeOut" }}
-              onClick={() => onSelect(entry.username)}
-              className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all duration-150 group"
-              style={{
-                borderBottom: i < visible.length - 1 ? "1px solid rgba(255,255,255,0.03)" : "none",
-                background: isCurrent ? `rgba(${BLUE},0.05)` : "transparent"
-              }}
-              onMouseEnter={e => {
-                if (!isCurrent) {
-                  (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)";
-                }
-              }}
-              onMouseLeave={e => {
-                if (!isCurrent) {
-                  (e.currentTarget as HTMLElement).style.background = "transparent";
-                }
-              }}
-            >
-              {/* Rank */}
-              <RankBadge rank={rank} />
+        {/* Scroll viewport */}
+        <div className="lb-scroll overflow-y-auto" style={{ maxHeight: "21rem" }}>
+          {entries.map((entry, i) => {
+            const rank = i + 1;
+            const isCurrent =
+              currentUsername &&
+              entry.username.toLowerCase() === currentUsername.toLowerCase();
+            const tier = tierForScore(entry.score);
+            const tc = tier.color;
+            return (
+              <motion.button
+                key={entry.username}
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: Math.min(i, 10) * 0.035, duration: 0.3, ease: "easeOut" }}
+                onClick={() => onSelect(entry.username)}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors duration-150"
+                style={{
+                  borderBottom: i < entries.length - 1 ? "1px solid rgba(255,255,255,0.035)" : "none",
+                  background: isCurrent ? `rgba(${BLUE},0.06)` : "transparent"
+                }}
+                onMouseEnter={e => {
+                  if (!isCurrent)
+                    (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.035)";
+                }}
+                onMouseLeave={e => {
+                  if (!isCurrent)
+                    (e.currentTarget as HTMLElement).style.background = "transparent";
+                }}
+              >
+                {/* Rank */}
+                <RankBadge rank={rank} />
 
-              {/* Avatar */}
-              <div className="relative flex-shrink-0">
-                {entry.avatar ? (
-                  <img
-                    src={entry.avatar}
-                    alt=""
-                    className="w-7 h-7 rounded-full"
-                    style={{ filter: "saturate(0.4) brightness(0.8)" }}
-                  />
-                ) : (
-                  <div className="w-7 h-7 rounded-full bg-neutral-800" />
-                )}
-                {isCurrent && (
-                  <div
-                    className="absolute inset-0 rounded-full"
-                    style={{ boxShadow: `0 0 0 1.5px rgba(${BLUE},0.5)` }}
-                  />
-                )}
-              </div>
-
-              {/* Name + title */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5">
-                  <span
-                    className="font-mono text-[12px] font-medium truncate"
-                    style={isCurrent ? { color: `rgb(${BLUE})` } : { color: "rgb(212,212,212)" }}
-                  >
-                    @{entry.username}
-                  </span>
+                {/* Avatar */}
+                <div className="relative flex-shrink-0">
+                  {entry.avatar ? (
+                    <img
+                      src={entry.avatar}
+                      alt=""
+                      className="w-7 h-7 rounded-full"
+                      style={{ filter: "saturate(0.4) brightness(0.8)" }}
+                    />
+                  ) : (
+                    <div className="w-7 h-7 rounded-full bg-neutral-800" />
+                  )}
                   {isCurrent && (
-                    <span
-                      className="font-mono text-[8px] uppercase tracking-widest flex-shrink-0"
-                      style={{ color: `rgba(${BLUE},0.6)` }}
-                    >
-                      you
-                    </span>
+                    <div
+                      className="absolute inset-0 rounded-full"
+                      style={{ boxShadow: `0 0 0 1.5px rgba(${BLUE},0.5)` }}
+                    />
                   )}
                 </div>
-                <div className="font-mono text-[9px] text-neutral-600 truncate mt-px">
-                  {entry.title}
-                </div>
-              </div>
 
-              {/* Commit count */}
-              <span className="font-mono text-[10px] text-neutral-700 w-20 text-right hidden sm:block flex-shrink-0">
-                {entry.totalCommits > 0
-                  ? entry.totalCommits.toLocaleString("en-US")
-                  : "—"}
-              </span>
-
-              {/* Score + mini bar */}
-              <div className="flex items-center gap-2 w-14 flex-shrink-0 justify-end">
-                {/* Inline sparkbar */}
-                <div
-                  className="w-8 h-[3px] rounded-full overflow-hidden hidden xs:block"
-                  style={{ background: "rgba(255,255,255,0.06)" }}
-                >
+                {/* Name + tier name */}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <span
+                      className="font-mono text-[12px] font-medium truncate"
+                      style={isCurrent ? { color: `rgb(${BLUE})` } : { color: "rgb(212,212,212)" }}
+                    >
+                      @{entry.username}
+                    </span>
+                    {isCurrent && (
+                      <span
+                        className="font-mono text-[8px] uppercase tracking-widest flex-shrink-0"
+                        style={{ color: `rgba(${BLUE},0.6)` }}
+                      >
+                        you
+                      </span>
+                    )}
+                  </div>
                   <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${entry.score}%`,
-                      background: rowColor(entry.score),
-                      opacity: 0.7
-                    }}
-                  />
+                    className="font-mono text-[8.5px] uppercase tracking-wider truncate mt-px"
+                    style={{ color: `rgba(${tc},0.65)` }}
+                  >
+                    {tier.name}
+                  </div>
                 </div>
+
+                {/* Grade chip */}
                 <span
-                  className="font-mono text-[12px] font-bold tabular-nums"
-                  style={{ color: rowColor(entry.score) }}
+                  className="font-mono text-[10px] font-extrabold rounded-md px-1.5 py-0.5 w-9 text-center flex-shrink-0 leading-none"
+                  style={{
+                    color: `rgb(${tc})`,
+                    background: `rgba(${tc},0.12)`,
+                    border: `1px solid rgba(${tc},0.3)`
+                  }}
+                >
+                  {tier.grade}
+                </span>
+
+                {/* Commit count */}
+                <span className="font-mono text-[10px] text-neutral-700 w-16 text-right hidden sm:block flex-shrink-0">
+                  {entry.totalCommits > 0 ? entry.totalCommits.toLocaleString("en-US") : "—"}
+                </span>
+
+                {/* Score */}
+                <span
+                  className="font-mono text-[13px] font-bold tabular-nums w-12 text-right flex-shrink-0"
+                  style={{ color: `rgb(${tc})` }}
                 >
                   {entry.score}
                 </span>
-              </div>
-            </motion.button>
-          );
-        })}
+              </motion.button>
+            );
+          })}
+        </div>
 
-        {/* Show more / less */}
-        {hasMore && (
-          <button
-            onClick={() => setExpanded(e => !e)}
-            className="w-full py-3 font-mono text-[10px] text-neutral-600 hover:text-neutral-400 transition-colors flex items-center justify-center gap-1.5"
-            style={{ borderTop: "1px solid rgba(255,255,255,0.04)" }}
-          >
-            <Zap size={9} strokeWidth={1.5} />
-            {expanded
-              ? "show less"
-              : `show ${data.entries.length - PREVIEW_COUNT} more`}
-          </button>
+        {/* Fade hint at the bottom when there's more to scroll */}
+        {entries.length > 6 && (
+          <div
+            className="pointer-events-none absolute bottom-0 left-0 right-0 h-8 rounded-b-2xl"
+            style={{ background: "linear-gradient(to top, rgba(10,10,10,0.9), transparent)" }}
+          />
         )}
       </div>
 
@@ -308,10 +286,21 @@ export function Leaderboard({ onSelect, currentUsername, refreshKey = 0 }: Props
       )}
 
       <style>{`
-        @keyframes pulse {
+        @keyframes lb-pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.4; }
         }
+        .lb-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(255,255,255,0.15) transparent;
+        }
+        .lb-scroll::-webkit-scrollbar { width: 6px; }
+        .lb-scroll::-webkit-scrollbar-track { background: transparent; }
+        .lb-scroll::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.12);
+          border-radius: 999px;
+        }
+        .lb-scroll::-webkit-scrollbar-thumb:hover { background: rgba(${BLUE},0.45); }
       `}</style>
     </motion.section>
   );

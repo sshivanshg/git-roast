@@ -120,7 +120,7 @@ export default function RoastApp() {
   const tweet = () => {
     if (state.status !== "done") return;
     const r = state.roast;
-    const text = `I'm "${r.title}" with a chaos score of ${r.score}/100 😅\n\nGet roasted by your own GitHub commits:`;
+    const text = `Ranked ${r.tier.grade}-tier — "${r.tier.name}" with a chaos score of ${r.score}/100 🔥 (${r.tier.rarity})\n\nGet roasted by your own GitHub commits:`;
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`,
       "_blank"

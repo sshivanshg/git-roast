@@ -8,6 +8,7 @@ const BLUE = "56, 189, 248";
 
 export const RoastCard = forwardRef<HTMLDivElement, { roast: Roast }>(
   function RoastCard({ roast }, ref) {
+    const tc = roast.tier.color; // tier accent, "r,g,b"
     return (
       <div
         ref={ref}
@@ -89,20 +90,46 @@ export const RoastCard = forwardRef<HTMLDivElement, { roast: Roast }>(
               initial={{ opacity: 0, scale: 0.6 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.15, duration: 0.5, type: "spring", stiffness: 220, damping: 18 }}
-              className="flex-shrink-0 text-right"
+              className="flex-shrink-0 flex items-center gap-2.5"
             >
+              {/* Grade badge */}
               <div
-                className="font-mono font-bold leading-none"
+                className="flex flex-col items-center justify-center rounded-xl px-2.5 py-1.5 leading-none"
                 style={{
-                  fontSize: "clamp(2rem, 8vw, 3rem)",
-                  color: `rgb(${BLUE})`,
-                  textShadow: `0 0 24px rgba(${BLUE},0.55), 0 0 48px rgba(${BLUE},0.2)`
+                  background: `rgba(${tc},0.1)`,
+                  border: `1px solid rgba(${tc},0.45)`,
+                  boxShadow: `0 0 18px rgba(${tc},0.18), inset 0 0 12px rgba(${tc},0.08)`
                 }}
               >
-                {roast.score}
+                <span
+                  className="font-mono font-extrabold tracking-tight"
+                  style={{
+                    fontSize: "clamp(1rem, 4.5vw, 1.5rem)",
+                    color: `rgb(${tc})`,
+                    textShadow: `0 0 16px rgba(${tc},0.6)`
+                  }}
+                >
+                  {roast.tier.grade}
+                </span>
+                <span className="mt-1 font-mono text-[7px] uppercase tracking-[0.18em] text-neutral-500">
+                  rank
+                </span>
               </div>
-              <div className="mt-0.5 font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-neutral-600">
-                chaos
+
+              <div className="text-right">
+                <div
+                  className="font-mono font-bold leading-none"
+                  style={{
+                    fontSize: "clamp(2rem, 8vw, 3rem)",
+                    color: `rgb(${tc})`,
+                    textShadow: `0 0 24px rgba(${tc},0.55), 0 0 48px rgba(${tc},0.2)`
+                  }}
+                >
+                  {roast.score}
+                </div>
+                <div className="mt-0.5 font-mono text-[8px] sm:text-[9px] uppercase tracking-[0.2em] text-neutral-600">
+                  chaos
+                </div>
               </div>
             </motion.div>
           </div>
@@ -118,11 +145,29 @@ export const RoastCard = forwardRef<HTMLDivElement, { roast: Roast }>(
               transition={{ delay: 0.35, duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
               className="h-full rounded-full"
               style={{
-                background: `linear-gradient(90deg, rgba(${BLUE},0.45) 0%, rgb(${BLUE}) 100%)`,
-                boxShadow: `0 0 10px rgba(${BLUE},0.7)`
+                background: `linear-gradient(90deg, rgba(${tc},0.45) 0%, rgb(${tc}) 100%)`,
+                boxShadow: `0 0 10px rgba(${tc},0.7)`
               }}
             />
           </div>
+
+          {/* Tier name + rarity — the shareable flex line */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5, duration: 0.5 }}
+            className="mt-2.5 flex items-center justify-between gap-2"
+          >
+            <span
+              className="font-mono text-[11px] sm:text-[12px] font-bold uppercase tracking-[0.08em] truncate"
+              style={{ color: `rgb(${tc})` }}
+            >
+              {roast.tier.name}
+            </span>
+            <span className="font-mono text-[9px] sm:text-[10px] text-neutral-500 flex-shrink-0">
+              {roast.tier.rarity}
+            </span>
+          </motion.div>
 
           {/* Roast lines — staggered reveal */}
           <ul className="mt-5 sm:mt-6 flex flex-col gap-3 sm:gap-[14px]">

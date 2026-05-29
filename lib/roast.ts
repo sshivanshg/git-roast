@@ -10,6 +10,8 @@
 // same user always gets the same roast (and the web card matches the OG image),
 // while different users pull different lines from the pool.
 
+import { chaosScore, type ChaosTier } from "@/lib/score";
+
 export type RoastLine = {
   emoji: string;
   text: string;
@@ -25,6 +27,7 @@ export type Roast = {
   // derived
   title: string; // the "dev spirit" verdict
   score: number; // 0-100 chaos score
+  tier: ChaosTier; // rank/grade for the score (F … SSS, Ω)
   lines: RoastLine[];
   // raw-ish stats kept for the OG card / debugging
   totalCommits: number; // total indexed commits (headline number)
@@ -531,16 +534,21 @@ export async function computeRoast(rawUsername: string): Promise<Roast> {
   }
 
   // ---------- score + verdict ----------
-  let score =
-    18 +
-    fixCount * 3 +
-    lazyCount * 2.5 +
-    lateNightPct * 0.5 +
-    weekendPct * 0.25 +
-    profanity * 6 +
-    oneWord * 1.5 +
-    revertCount * 4;
-  score = Math.max(1, Math.min(100, Math.round(score)));
+  // Hard, saturating curve (see lib/score.ts) — 100 is mythical, not the default.
+  const { score, tier } = chaosScore({
+    sampleSize,
+    totalCommits,
+    fixCount,
+    lazyCount,
+    oneWord,
+    profanity,
+    revertCount,
+    mergeCount,
+    lateNightPct,
+    weekendPct,
+    topRepoShare,
+    shortestLen: shortest ? shortest.length : null
+  });
 
   let title = "Suspiciously Functional Adult";
   if (sampleSize === 0) title = "The Phantom Committer";
@@ -567,6 +575,7 @@ export async function computeRoast(rawUsername: string): Promise<Roast> {
     publicRepos: user.public_repos,
     title,
     score,
+    tier,
     // headliners lead; de-dupe defensively in case a stat fired in both tiers
     lines: [...headliners, ...lines]
       .filter((l, i, a) => a.findIndex((x) => x.text === l.text) === i)
