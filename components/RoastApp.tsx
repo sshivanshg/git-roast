@@ -89,12 +89,12 @@ export default function RoastApp() {
   };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center px-5 py-16 sm:py-24">
+    <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center px-5 py-20 sm:py-32">
       {/* wordmark */}
-      <h1 className="text-center text-3xl font-semibold tracking-tight sm:text-[2.5rem]">
+      <h1 className="text-center text-4xl font-semibold tracking-tight sm:text-5xl">
         git <span className="text-neutral-500">wrapped</span>
       </h1>
-      <p className="mt-3 max-w-md text-center text-sm leading-relaxed text-neutral-500">
+      <p className="mt-4 max-w-lg text-center text-base leading-relaxed text-neutral-500">
         Paste a GitHub username. Get roasted by your own commit history.
         No login, no nonsense.
       </p>
@@ -167,17 +167,6 @@ export default function RoastApp() {
         )}
       </div>
 
-      <footer className="mt-auto pt-16 text-center text-xs text-neutral-700">
-        public data only · built with Next.js on Vercel ·{" "}
-        <a
-          href="https://www.linkedin.com/in/connect-shivansh/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-neutral-600 hover:text-neutral-500 transition-colors"
-        >
-          connect
-        </a>
-      </footer>
     </main>
   );
 }
