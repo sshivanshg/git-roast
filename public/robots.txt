@@ -1,0 +1,20 @@
+User-agent: *
+Allow: /
+Allow: /api/og
+
+Disallow: /.next/
+Disallow: /node_modules/
+
+Sitemap: https://git-wrapped.vercel.app/sitemap.xml
+
+# Crawl delay for respectful scraping
+Crawl-delay: 1
+
+# Allow specific bots to crawl faster
+User-agent: Googlebot
+Crawl-delay: 0
+Allow: /
+
+User-agent: Bingbot
+Crawl-delay: 0
+Allow: /

@@ -90,17 +90,18 @@ export default function RoastApp() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-4xl flex-col items-center px-5 py-20 sm:py-32">
-      {/* wordmark */}
-      <h1 className="text-center text-4xl font-semibold tracking-tight sm:text-5xl">
-        git <span className="text-neutral-500">wrapped</span>
-      </h1>
-      <p className="mt-4 max-w-lg text-center text-base leading-relaxed text-neutral-500">
-        Paste a GitHub username. Get roasted by your own commit history.
-        No login, no nonsense.
-      </p>
+      <header className="w-full text-center">
+        <h1 className="text-center text-4xl font-semibold tracking-tight sm:text-5xl">
+          git <span className="text-neutral-500">wrapped</span>
+        </h1>
+        <p className="mt-4 max-w-lg mx-auto text-center text-base leading-relaxed text-neutral-500">
+          Paste a GitHub username. Get roasted by your own commit history.
+          No login, no nonsense.
+        </p>
+      </header>
 
       {/* input */}
-      <form onSubmit={onSubmit} className="mt-8 w-full max-w-md">
+      <form onSubmit={onSubmit} className="mt-8 w-full max-w-md" role="search">
         <div className="flex items-center gap-2 rounded-xl border border-line bg-panel px-3 transition-colors focus-within:border-neutral-600">
           <span className="select-none text-neutral-600">$</span>
           <input
