@@ -9,6 +9,7 @@ import { GlassInput } from "@/components/GlassInput";
 import { BackgroundAtmosphere } from "@/components/BackgroundAtmosphere";
 import { HallOfShame, type HallEntry } from "@/components/HallOfShame";
 import { Leaderboard } from "@/components/Leaderboard";
+import { LiveCount } from "@/components/LiveCount";
 import { Download, Share2, Copy, Check } from "lucide-react";
 import type { Roast } from "@/lib/roast";
 
@@ -47,12 +48,22 @@ export default function RoastApp() {
   const [state, setState] = useState<State>({ status: "idle" });
   const [copied, setCopied] = useState(false);
   const [hall, setHall] = useState<HallEntry[]>([]);
+  const [statsKey, setStatsKey] = useState(0); // bump → live counters refetch
   const cardRef = useRef<HTMLDivElement>(null);
   const placeholder = PLACEHOLDERS[username.length % PLACEHOLDERS.length];
 
   // Load hall from localStorage once on mount
   useEffect(() => {
     setHall(loadHall());
+  }, []);
+
+  // Count this visit once per session, then refresh the live counter
+  useEffect(() => {
+    if (sessionStorage.getItem("gw-visited")) return;
+    sessionStorage.setItem("gw-visited", "1");
+    fetch("/api/visit", { method: "POST", cache: "no-store" })
+      .then(() => setStatsKey(k => k + 1))
+      .catch(() => {});
   }, []);
 
   const run = useCallback(async (name: string) => {
@@ -71,6 +82,7 @@ export default function RoastApp() {
       const roast = data as Roast;
       setState({ status: "done", roast });
       setHall(pushToHall(roast));
+      setStatsKey(k => k + 1); // a new roast landed → refresh live counts + ranking
     } catch {
       setState({ status: "error", message: "Network error. Try again." });
     }
@@ -128,6 +140,11 @@ export default function RoastApp() {
       <main className="relative z-20 mx-auto flex min-h-screen max-w-5xl flex-col items-center px-4 sm:px-5 py-10 sm:py-20 lg:py-28 pb-16">
 
         <HeroSection />
+
+        {/* Live activity counter */}
+        <div className="mb-7 sm:mb-9 flex justify-center">
+          <LiveCount refreshKey={statsKey} />
+        </div>
 
         <GlassInput
           placeholder={placeholder}
@@ -261,6 +278,7 @@ export default function RoastApp() {
           <Leaderboard
             onSelect={name => { setUsername(name); run(name); }}
             currentUsername={state.status === "done" ? state.roast.username : undefined}
+            refreshKey={statsKey}
           />
         )}
 

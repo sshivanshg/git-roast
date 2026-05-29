@@ -8,7 +8,8 @@ import type { LeaderboardEntry } from "@/lib/leaderboard";
 const BLUE   = "56, 189, 248";
 const PURPLE = "168, 85, 247";
 
-type Data = { entries: LeaderboardEntry[]; total: number; live: boolean };
+type Stats = { roasts: number; uniqueDevs: number; visitors: number };
+type Data = { entries: LeaderboardEntry[]; total: number; stats?: Stats; live: boolean };
 
 // Score → accent color
 function rowColor(score: number) {
@@ -44,18 +45,28 @@ function RankBadge({ rank }: { rank: number }) {
 interface Props {
   onSelect: (username: string) => void;
   currentUsername?: string;
+  /** bump this after a roast completes to force an immediate refetch */
+  refreshKey?: number;
 }
 
-export function Leaderboard({ onSelect, currentUsername }: Props) {
+const POLL_MS = 12_000;
+
+export function Leaderboard({ onSelect, currentUsername, refreshKey = 0 }: Props) {
   const [data, setData] = useState<Data | null>(null);
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
-    fetch("/api/leaderboard")
-      .then(r => r.json())
-      .then(setData)
-      .catch(() => {});
-  }, []);
+    let alive = true;
+    const load = () =>
+      fetch("/api/leaderboard", { cache: "no-store" })
+        .then(r => r.json())
+        .then(d => { if (alive) setData(d); })
+        .catch(() => {});
+
+    load();
+    const id = setInterval(load, POLL_MS);
+    return () => { alive = false; clearInterval(id); };
+  }, [refreshKey]);
 
   if (!data) {
     return (
