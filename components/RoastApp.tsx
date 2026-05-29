@@ -7,7 +7,7 @@ import { RoastCard } from "@/components/RoastCard";
 import { HeroSection } from "@/components/HeroSection";
 import { GlassInput } from "@/components/GlassInput";
 import { BackgroundAtmosphere } from "@/components/BackgroundAtmosphere";
-import { RecentVictimsTicker } from "@/components/RecentVictimsTicker";
+import { HallOfShame, type HallEntry } from "@/components/HallOfShame";
 import { Download, Share2, Copy, Check } from "lucide-react";
 import type { Roast } from "@/lib/roast";
 
@@ -18,13 +18,41 @@ type State =
   | { status: "done"; roast: Roast };
 
 const PLACEHOLDERS = ["torvalds", "sindresorhus", "gaearon", "yyx990803", "tj"];
+const HALL_KEY = "git-wrapped-hall";
+const HALL_MAX = 6;
+const BLUE = "56, 189, 248";
+
+function loadHall(): HallEntry[] {
+  if (typeof window === "undefined") return [];
+  try {
+    return JSON.parse(localStorage.getItem(HALL_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function pushToHall(roast: Roast): HallEntry[] {
+  const prev = loadHall().filter(e => e.username !== roast.username);
+  const next: HallEntry[] = [
+    { username: roast.username, avatar: roast.avatar, score: roast.score, title: roast.title },
+    ...prev
+  ].slice(0, HALL_MAX);
+  localStorage.setItem(HALL_KEY, JSON.stringify(next));
+  return next;
+}
 
 export default function RoastApp() {
   const [username, setUsername] = useState("");
   const [state, setState] = useState<State>({ status: "idle" });
   const [copied, setCopied] = useState(false);
+  const [hall, setHall] = useState<HallEntry[]>([]);
   const cardRef = useRef<HTMLDivElement>(null);
   const placeholder = PLACEHOLDERS[username.length % PLACEHOLDERS.length];
+
+  // Load hall from localStorage once on mount
+  useEffect(() => {
+    setHall(loadHall());
+  }, []);
 
   const run = useCallback(async (name: string) => {
     const clean = name.trim().replace(/^@/, "");
@@ -39,7 +67,9 @@ export default function RoastApp() {
         setState({ status: "error", message: data.error || "Something broke." });
         return;
       }
-      setState({ status: "done", roast: data as Roast });
+      const roast = data as Roast;
+      setState({ status: "done", roast });
+      setHall(pushToHall(roast));
     } catch {
       setState({ status: "error", message: "Network error. Try again." });
     }
@@ -58,16 +88,14 @@ export default function RoastApp() {
     try {
       const dataUrl = await toPng(cardRef.current, {
         pixelRatio: 2,
-        backgroundColor: "#0a0a0b"
+        backgroundColor: "#0a0a0a"
       });
       const a = document.createElement("a");
       const name = state.status === "done" ? state.roast.username : "git-wrapped";
       a.download = `git-wrapped-${name}.png`;
       a.href = dataUrl;
       a.click();
-    } catch {
-      /* ignore */
-    }
+    } catch { /* ignore */ }
   };
 
   const copyLink = async () => {
@@ -80,22 +108,26 @@ export default function RoastApp() {
     if (state.status !== "done") return;
     const r = state.roast;
     const text = `I'm "${r.title}" with a chaos score of ${r.score}/100 😅\n\nGet roasted by your own GitHub commits:`;
-    const url = window.location.href;
     window.open(
-      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`,
+      `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`,
       "_blank"
     );
   };
+
+  // Hall entries: exclude the currently displayed user to avoid duplication
+  const hallEntries =
+    state.status === "done"
+      ? hall.filter(e => e.username !== state.roast.username)
+      : hall;
 
   return (
     <>
       <BackgroundAtmosphere />
 
-      <main className="relative z-20 mx-auto flex min-h-screen max-w-5xl flex-col items-center px-5 py-16 sm:py-24 lg:py-32 pb-24">
-        {/* Hero Section */}
+      <main className="relative z-20 mx-auto flex min-h-screen max-w-5xl flex-col items-center px-5 py-16 sm:py-24 lg:py-32 pb-20">
+
         <HeroSection />
 
-        {/* Input Section */}
         <GlassInput
           placeholder={placeholder}
           value={username}
@@ -104,30 +136,43 @@ export default function RoastApp() {
           isLoading={state.status === "loading"}
         />
 
-        {/* Result Area */}
+        {/* ── Result area ── */}
         <div className="mt-16 w-full flex flex-col items-center">
+
           {state.status === "loading" && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               className="flex flex-col items-center gap-4"
             >
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                className="w-8 h-8 border-2 border-accent-glow border-transparent border-t-accent-glow rounded-full"
+              <div
+                className="w-8 h-8 rounded-full border-2"
+                style={{
+                  borderColor: `rgba(${BLUE},0.15)`,
+                  borderTopColor: `rgb(${BLUE})`,
+                  animation: "spin 1s linear infinite"
+                }}
               />
-              <p className="text-sm text-neutral-400 font-mono">
-                analyzing commit history<span className="animate-blink">_</span>
+              <p className="text-sm text-neutral-500 font-mono">
+                analyzing commit history
+                <motion.span
+                  animate={{ opacity: [1, 0] }}
+                  transition={{ duration: 0.7, repeat: Infinity }}
+                >_</motion.span>
               </p>
+              <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
             </motion.div>
           )}
 
           {state.status === "error" && (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="text-sm text-red-400/80 font-mono bg-red-500/5 px-6 py-4 rounded-lg border border-red-500/20"
+              className="font-mono text-sm text-red-400/80 px-6 py-4 rounded-xl"
+              style={{
+                background: "rgba(239,68,68,0.05)",
+                border: "1px solid rgba(239,68,68,0.15)"
+              }}
             >
               {state.message}
             </motion.div>
@@ -135,60 +180,74 @@ export default function RoastApp() {
 
           {state.status === "done" && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.45, ease: "easeOut" }}
               className="w-full flex flex-col items-center gap-8"
             >
-              {/* Roast Card */}
+              {/* Roast card */}
               <div className="w-full flex justify-center">
                 <RoastCard ref={cardRef} roast={state.roast} />
               </div>
 
-              {/* Action Buttons */}
+              {/* Action buttons */}
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="flex flex-wrap items-center justify-center gap-3"
+                transition={{ delay: 0.25 }}
+                className="flex flex-wrap items-center justify-center gap-2.5"
               >
                 {[
-                  { icon: Share2, label: "share on X", onClick: tweet },
-                  { icon: Download, label: "download png", onClick: download },
-                  {
-                    icon: copied ? Check : Copy,
-                    label: copied ? "copied ✓" : "copy link",
-                    onClick: copyLink
-                  }
-                ].map((btn, idx) => (
+                  { icon: Share2,  label: "share on X",   onClick: tweet,     active: false },
+                  { icon: Download, label: "download png", onClick: download,  active: false },
+                  { icon: copied ? Check : Copy, label: copied ? "copied!" : "copy link", onClick: copyLink, active: copied }
+                ].map((btn, i) => (
                   <motion.button
-                    key={idx}
+                    key={i}
                     onClick={btn.onClick}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`
-                      flex items-center gap-2 px-4 py-2 rounded-lg
-                      border font-mono text-sm
-                      transition-all duration-200
-                      ${
-                        copied && btn.label.includes("copy")
-                          ? "border-accent-glow/60 bg-accent-glow/10 text-accent-glow"
-                          : "border-neutral-700/50 bg-white/5 text-neutral-400 hover:border-neutral-600/80 hover:bg-white/10"
+                    whileHover={{ scale: 1.04 }}
+                    whileTap={{ scale: 0.96 }}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-sm transition-all duration-200"
+                    style={
+                      btn.active
+                        ? {
+                            background: `rgba(${BLUE},0.1)`,
+                            border: `1px solid rgba(${BLUE},0.4)`,
+                            color: `rgb(${BLUE})`
+                          }
+                        : {
+                            background: "rgba(255,255,255,0.04)",
+                            border: "1px solid rgba(255,255,255,0.08)",
+                            color: "rgb(163,163,163)"
+                          }
+                    }
+                    onMouseEnter={e => {
+                      if (!btn.active) {
+                        (e.currentTarget as HTMLElement).style.borderColor = `rgba(${BLUE},0.3)`;
+                        (e.currentTarget as HTMLElement).style.color = `rgb(${BLUE})`;
+                        (e.currentTarget as HTMLElement).style.background = `rgba(${BLUE},0.06)`;
                       }
-                    `}
+                    }}
+                    onMouseLeave={e => {
+                      if (!btn.active) {
+                        (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)";
+                        (e.currentTarget as HTMLElement).style.color = "rgb(163,163,163)";
+                        (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                      }
+                    }}
                   >
-                    <btn.icon size={16} />
+                    <btn.icon size={14} strokeWidth={1.5} />
                     <span className="text-xs sm:text-sm">{btn.label}</span>
                   </motion.button>
                 ))}
               </motion.div>
 
-              {/* Info Text */}
+              {/* Metadata line */}
               <motion.p
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="text-xs text-neutral-600 font-mono text-center"
+                transition={{ delay: 0.4 }}
+                className="font-mono text-xs text-neutral-700 text-center"
               >
                 based on {state.roast.sampleSize} recent commits · affectionate, not accurate
               </motion.p>
@@ -196,26 +255,40 @@ export default function RoastApp() {
           )}
         </div>
 
+        {/* ── Hall of Shame ── */}
+        {state.status !== "loading" && hallEntries.length > 0 && (
+          <HallOfShame
+            entries={hallEntries}
+            onSelect={name => {
+              setUsername(name);
+              run(name);
+            }}
+          />
+        )}
+
         {/* Footer */}
         <motion.footer
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
+          transition={{ delay: 0.7 }}
           className="mt-auto pt-16"
         >
           <a
             href="https://www.linkedin.com/in/connect-shivansh/"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-xs text-neutral-700 hover:text-accent-glow transition-colors duration-200 font-mono"
+            className="font-mono text-xs text-neutral-700 transition-colors duration-200"
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.color = `rgb(${BLUE})`;
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.color = "rgb(64,64,64)";
+            }}
           >
             connect
           </a>
         </motion.footer>
       </main>
-
-      {/* Ticker */}
-      <RecentVictimsTicker />
     </>
   );
 }

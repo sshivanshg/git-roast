@@ -4,23 +4,20 @@
 
 html,
 body {
-  background: linear-gradient(135deg, #0a0a0a 0%, #111111 100%);
+  background: #0a0a0a;
   color: #ededed;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-x: hidden;
 }
 
-/* Selection styling */
 ::selection {
-  background: rgba(0, 255, 136, 0.2);
+  background: rgba(56, 189, 248, 0.25);
   color: #ffffff;
 }
 
-/* Scrollbar styling */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
 }
 
 ::-webkit-scrollbar-track {
@@ -28,31 +25,22 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 136, 0.2);
-  border-radius: 4px;
-  transition: background 0.2s;
+  background: rgba(56, 189, 248, 0.15);
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 255, 136, 0.4);
+  background: rgba(56, 189, 248, 0.3);
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 255, 136, 0.2) transparent;
+  scrollbar-color: rgba(56, 189, 248, 0.15) transparent;
 }
 
-/* Smooth transitions */
-button,
-input,
-a {
-  transition: all 0.2s ease;
-}
-
-/* Focus visible states for accessibility */
 button:focus-visible,
 input:focus-visible,
 a:focus-visible {
-  outline: 2px solid rgba(0, 255, 136, 0.5);
+  outline: 2px solid rgba(56, 189, 248, 0.5);
   outline-offset: 2px;
 }
