@@ -168,7 +168,15 @@ export default function RoastApp() {
       </div>
 
       <footer className="mt-auto pt-16 text-center text-xs text-neutral-700">
-        public data only · built with Next.js on Vercel
+        public data only · built with Next.js on Vercel ·{" "}
+        <a
+          href="https://www.linkedin.com/in/connect-shivansh/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-neutral-600 hover:text-neutral-500 transition-colors"
+        >
+          connect
+        </a>
       </footer>
     </main>
   );
