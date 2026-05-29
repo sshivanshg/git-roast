@@ -72,6 +72,38 @@ export function Leaderboard({ onSelect, currentUsername }: Props) {
     );
   }
 
+  // Empty state — no real roasts yet
+  if (data.entries.length === 0) {
+    return (
+      <motion.section
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-2xl mt-16"
+      >
+        <div className="flex items-center gap-2.5 mb-5">
+          <Trophy size={13} strokeWidth={1.5} style={{ color: `rgb(${BLUE})` }} />
+          <span className="font-mono text-[11px] tracking-[0.16em] uppercase text-neutral-400">
+            chaos rankings
+          </span>
+        </div>
+        <div
+          className="rounded-2xl px-6 py-10 flex flex-col items-center gap-3 text-center"
+          style={{
+            background: "rgba(255,255,255,0.02)",
+            border: "1px solid rgba(255,255,255,0.06)"
+          }}
+        >
+          <Trophy size={22} strokeWidth={1} className="text-neutral-700" />
+          <p className="font-mono text-xs text-neutral-600">no one has been roasted yet</p>
+          <p className="font-mono text-[10px] text-neutral-700">
+            enter a username above to claim the top spot
+          </p>
+        </div>
+      </motion.section>
+    );
+  }
+
   const PREVIEW_COUNT = 5;
   const visible = expanded ? data.entries : data.entries.slice(0, PREVIEW_COUNT);
   const hasMore = data.entries.length > PREVIEW_COUNT;
